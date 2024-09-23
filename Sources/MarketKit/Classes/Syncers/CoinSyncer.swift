@@ -167,4 +167,22 @@ extension CoinSyncer {
             tokensTimestamp: try? syncerStateStorage.value(key: keyTokensLastSyncTimestamp)
         )
     }
+    
+//    private func addNewCoins() -> [Coin] {
+//        var newCoins = [Coin]()
+//        newCoins.append(Coin(uid: "xdc", name: "XDC", code: "XDC"))
+//        
+//        return newCoins
+//    }
+//    
+//    private func addNewBlockchains() -> [BlockchainRecord] {
+//        var newBlockchains = [BlockchainRecord]()
+//
+//        return []
+//    }
+//    
+//    private func addNewTokens() -> [TokenRecord] {
+//        
+//        return []
+//    }
 }
