@@ -53,7 +53,7 @@ class CoinSyncer {
 //           return []
 //        }
         var tokenRecords = [TokenRecord]()
-        tokenRecords.append(TokenRecord(coinUid: "xdc", blockchainUid: "xdc-network", type: "native"))
+        tokenRecords.append(TokenRecord(coinUid: "xdc", blockchainUid: "xdc-network", type: "native", decimals: 18))
         
         return tokenRecords
     }
