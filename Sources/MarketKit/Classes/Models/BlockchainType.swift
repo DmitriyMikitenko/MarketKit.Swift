@@ -17,6 +17,7 @@ public enum BlockchainType {
     case tron
     case solana
     case ton
+    case xdc
     case unsupported(uid: String)
 
     public init(uid: String) {
@@ -38,6 +39,7 @@ public enum BlockchainType {
         case "fantom": self = .fantom
         case "tron": self = .tron
         case "solana": self = .solana
+        case "xdc": self = .xdc
         case "the-open-network": self = .ton
         default: self = .unsupported(uid: uid)
         }
@@ -63,6 +65,7 @@ public enum BlockchainType {
         case .tron: return "tron"
         case .solana: return "solana"
         case .ton: return "the-open-network"
+        case .xdc: return "xdc"
         case let .unsupported(uid): return uid
         }
     }
