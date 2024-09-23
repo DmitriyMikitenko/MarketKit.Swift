@@ -168,3 +168,13 @@ extension CoinSyncer {
         )
     }
 }
+
+// block {"name":"xdc-network","uid":"xdc-network"}
+// coin {"coingecko_id":"xdce-crowd-sale","name":"XDC Network","market_cap_rank":89,"code":"XDC","uid":"xdce-crowd-sale"}
+// token
+// {"coin_uid":"globiance-exchange","blockchain_uid":"xdc-network","type":"xdc-network"}
+// {"type":"xdc-network","blockchain_uid":"xdc-network","coin_uid":"ecoin-2"}
+// {"blockchain_uid":"xdc-network","coin_uid":"storx","type":"xdc-network"}
+// {"type":"xdc-network","coin_uid":"xswap-protocol","blockchain_uid":"xdc-network"}
+
+// {"type":"native","coin_uid":"xdce-crowd-sale","blockchain_uid":"xdc-network"}
