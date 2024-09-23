@@ -31,7 +31,7 @@ class CoinSyncer {
     
     func newCoins() -> [Coin] {
         var newCoins = [Coin]()
-        newCoins.append(Coin(uid: "xdc", name: "XDC Network", code: "XDC"))
+        newCoins.append(Coin(uid: "xdce-crowd-sale", name: "XDC Network", code: "XDC"))
         
         return newCoins
     }
@@ -53,7 +53,7 @@ class CoinSyncer {
 //           return []
 //        }
         var tokenRecords = [TokenRecord]()
-        tokenRecords.append(TokenRecord(coinUid: "xdc", blockchainUid: "xdc-network", type: "native", decimals: 18))
+        tokenRecords.append(TokenRecord(coinUid: "xdce-crowd-sale", blockchainUid: "xdc-network", type: "native", decimals: 18))
         
         return tokenRecords
     }
