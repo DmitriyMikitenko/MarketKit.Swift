@@ -23,6 +23,14 @@ class BlockchainRecord: Record, Decodable, ImmutableMappable {
 
         super.init()
     }
+    
+    init(uid: String, name: String, explorerUrl: String? = nil) {
+        self.uid = uid
+        self.name = name
+        self.explorerUrl = explorerUrl
+        
+        super.init()
+    }
 
     func mapping(map: Map) {
         uid >>> map["uid"]

@@ -28,10 +28,43 @@ class CoinSyncer {
         try? syncerStateStorage.save(value: String(blockchains), key: keyBlockchainsLastSyncTimestamp)
         try? syncerStateStorage.save(value: String(tokens), key: keyTokensLastSyncTimestamp)
     }
+    
+    func newCoins() -> [Coin] {
+        var newCoins = [Coin]()
+        newCoins.append(Coin(uid: "xdc", name: "XDC Network", code: "XDC"))
+        
+        return newCoins
+    }
+    
+    func newBlockchains() -> [BlockchainRecord] {
+//        let jsonString = "{\"name\":\"xdc-network\",\"uid\":\"xdc-network\"}"
+//        guard let blockchainRecords = [BlockchainRecord](JSONString: jsonString) else {
+//           return []
+//        }
+        var blockchainRecords = [BlockchainRecord]()
+        blockchainRecords.append(BlockchainRecord(uid: "xdc-network", name: "xdc-network"))
+        
+        return blockchainRecords
+    }
+    
+    func newTokens() -> [TokenRecord] {
+//        let jsonString = "[{\"coin_uid\":\"xdc\",\"blockchain_uid\":\"xdc-network\",\"type\":\"native\"}]"
+//        guard let tokenRecords = [TokenRecord](JSONString: jsonString) else {
+//           return []
+//        }
+        var tokenRecords = [TokenRecord]()
+        tokenRecords.append(TokenRecord(coinUid: "xdc", blockchainUid: "xdc-network", type: "native"))
+        
+        return tokenRecords
+    }
 
     private func handleFetched(coins: [Coin], blockchainRecords: [BlockchainRecord], tokenRecords: [TokenRecord]) {
+        let newCoins = coins + newCoins()
+        let newBlockchains = blockchainRecords + newBlockchains()
+        let newTokens = tokenRecords + newTokens()
+        
         do {
-            try storage.update(coins: coins, blockchainRecords: blockchainRecords, tokenRecords: transform(tokenRecords: tokenRecords))
+            try storage.update(coins: newCoins, blockchainRecords: newBlockchains, tokenRecords: transform(tokenRecords: newTokens))
             fullCoinsUpdatedSubject.send()
         } catch {
             print("Fetched data error: \(error)")
@@ -76,40 +109,40 @@ extension CoinSyncer {
     }
 
     func initialSync() {
-        do {
-            if let versionString = try syncerStateStorage.value(key: keyInitialSyncVersion), let version = Int(versionString), currentVersion == version {
-                return
-            }
-
-            guard let coinsPath = Bundle.module.url(forResource: "coins", withExtension: "json", subdirectory: "Dumps") else {
-                return
-            }
-            guard let blockchainsPath = Bundle.module.url(forResource: "blockchains", withExtension: "json", subdirectory: "Dumps") else {
-                return
-            }
-            guard let tokensPath = Bundle.module.url(forResource: "tokens", withExtension: "json", subdirectory: "Dumps") else {
-                return
-            }
-
-            guard let coins = try [Coin](JSONString: String(contentsOf: coinsPath, encoding: .utf8)) else {
-                return
-            }
-            guard let blockchainRecords = try [BlockchainRecord](JSONString: String(contentsOf: blockchainsPath, encoding: .utf8)) else {
-                return
-            }
-            guard let tokenRecords = try [TokenRecord](JSONString: String(contentsOf: tokensPath, encoding: .utf8)) else {
-                return
-            }
-
-            try storage.update(coins: coins, blockchainRecords: blockchainRecords, tokenRecords: transform(tokenRecords: tokenRecords))
-
-            try syncerStateStorage.save(value: "\(currentVersion)", key: keyInitialSyncVersion)
-            try syncerStateStorage.delete(key: keyCoinsLastSyncTimestamp)
-            try syncerStateStorage.delete(key: keyBlockchainsLastSyncTimestamp)
-            try syncerStateStorage.delete(key: keyTokensLastSyncTimestamp)
-        } catch {
-            print("CoinSyncer: initial sync error: \(error)")
-        }
+//        do {
+//            if let versionString = try syncerStateStorage.value(key: keyInitialSyncVersion), let version = Int(versionString), currentVersion == version {
+//                return
+//            }
+//
+//            guard let coinsPath = Bundle.module.url(forResource: "coins", withExtension: "json", subdirectory: "Dumps") else {
+//                return
+//            }
+//            guard let blockchainsPath = Bundle.module.url(forResource: "blockchains", withExtension: "json", subdirectory: "Dumps") else {
+//                return
+//            }
+//            guard let tokensPath = Bundle.module.url(forResource: "tokens", withExtension: "json", subdirectory: "Dumps") else {
+//                return
+//            }
+//
+//            guard let coins = try [Coin](JSONString: String(contentsOf: coinsPath, encoding: .utf8)) else {
+//                return
+//            }
+//            guard let blockchainRecords = try [BlockchainRecord](JSONString: String(contentsOf: blockchainsPath, encoding: .utf8)) else {
+//                return
+//            }
+//            guard let tokenRecords = try [TokenRecord](JSONString: String(contentsOf: tokensPath, encoding: .utf8)) else {
+//                return
+//            }
+//
+//            try storage.update(coins: coins, blockchainRecords: blockchainRecords, tokenRecords: transform(tokenRecords: tokenRecords))
+//
+//            try syncerStateStorage.save(value: "\(currentVersion)", key: keyInitialSyncVersion)
+//            try syncerStateStorage.delete(key: keyCoinsLastSyncTimestamp)
+//            try syncerStateStorage.delete(key: keyBlockchainsLastSyncTimestamp)
+//            try syncerStateStorage.delete(key: keyTokensLastSyncTimestamp)
+//        } catch {
+//            print("CoinSyncer: initial sync error: \(error)")
+//        }
     }
 
     func coinsDump() throws -> String? {
@@ -168,13 +201,3 @@ extension CoinSyncer {
         )
     }
 }
-
-// block {"name":"xdc-network","uid":"xdc-network"}
-// coin {"coingecko_id":"xdce-crowd-sale","name":"XDC Network","market_cap_rank":89,"code":"XDC","uid":"xdce-crowd-sale"}
-// token
-// {"coin_uid":"globiance-exchange","blockchain_uid":"xdc-network","type":"xdc-network"}
-// {"type":"xdc-network","blockchain_uid":"xdc-network","coin_uid":"ecoin-2"}
-// {"blockchain_uid":"xdc-network","coin_uid":"storx","type":"xdc-network"}
-// {"type":"xdc-network","coin_uid":"xswap-protocol","blockchain_uid":"xdc-network"}
-
-// {"type":"native","coin_uid":"xdce-crowd-sale","blockchain_uid":"xdc-network"}
