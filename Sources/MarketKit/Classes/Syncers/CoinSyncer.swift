@@ -32,7 +32,9 @@ class CoinSyncer {
     func newCoins() -> [Coin] {
         var newCoins = [Coin]()
         let xdcCoin = Coin(uid: "xdce-crowd-sale", name: "XDC Network", code: "XDC")
-        newCoins.append(xdcCoin)
+        let mewCoin = Coin(uid: "cat-in-a-dogs-world;", name: "cat in a dogs world", code: "MEW", marketCapRank: 150, coinGeckoId: "cat-in-a-dogs-world;")
+                
+        newCoins.append(contentsOf: [xdcCoin, mewCoin])
         
         return newCoins
     }
@@ -48,7 +50,9 @@ class CoinSyncer {
     func newTokens() -> [TokenRecord] {
         var tokenRecords = [TokenRecord]()
         let xdcToken = TokenRecord(coinUid: "xdce-crowd-sale", blockchainUid: "xdc-network", type: "native", decimals: 18)
-        tokenRecords.append(xdcToken)
+        let mewToken = TokenRecord(coinUid: "cat-in-a-dogs-world", blockchainUid: "solana", type: "spl", decimals: 5, reference: "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5")
+        
+        tokenRecords.append(contentsOf: [xdcToken, mewToken])
         
         return tokenRecords
     }
