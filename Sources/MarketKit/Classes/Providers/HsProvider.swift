@@ -9,6 +9,7 @@ class HsProvider {
     private let appVersion: String
     private let appId: String?
     private let apiKey: String?
+    private let dexUrl: String = "https://dev-api.dextrade.com/public/price/by/uuids"
 
     var proAuthToken: String?
 
@@ -197,21 +198,96 @@ extension HsProvider {
     }
 
     // Coin Prices
+    
+    func fetchDexPrices(for uids: [String], currencyCode: String) async throws -> [CoinPrice] {
+        guard let url = URL(string: dexUrl),
+              let body = try? JSONSerialization.data(withJSONObject: uids, options: [])
+        else {
+            throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
+        }
+        var request = URLRequest(url: url)
+        request.method = .post
+        request.httpBody = body
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
+        // Выполнение GET-запроса
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        // Проверка на статус код ответа
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
+        }
+        
+        // Десериализация ответа
+        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+
+        // Проверка на тип объекта (должен быть массив словарей)
+        guard let jsonArray = jsonObject as? [[String: Any]] else {
+            throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
+        }
+
+        // Преобразование в массив CoinPrice через mapArray
+        let coinPrices = try Mapper<CoinPriceResponse>().mapArray(JSONObject: jsonArray)
+
+        // Возвращаем массив объектов CoinPrice
+        return coinPrices.map { $0.coinPrice(currencyCode: currencyCode) }
+    }
+    
     func coinPrices(coinUids: [String], walletCoinUids: [String], currencyCode: String) async throws -> [CoinPrice] {
+        // Создаем массив для хранения всех цен
+        var resultCoinPrices: [CoinPrice] = []
+
+        // Фильтруем coinUids
+        var hsProviderUids = coinUids.filter { $0 != "philtoken" }
+        
+        // Если "philtoken" в списке, выполняем fetchDexPrices
+        if hsProviderUids.count != coinUids.count {
+            let dexPrices = try await fetchDexPrices(for: ["philtoken"], currencyCode: currencyCode)
+            resultCoinPrices.append(contentsOf: dexPrices)  // Добавляем результат fetchDexPrices
+        }
+
+        // Подготавливаем параметры для второго запроса
         var parameters: Parameters = [
-            "uids": coinUids.joined(separator: ","),
+            "uids": hsProviderUids.joined(separator: ","),
             "currency": currencyCode.lowercased(),
-            "fields": "price,price_change_24h,last_updated",
+            "fields": "price,price_change_24h,last_updated"
         ]
 
+        // Если есть walletCoinUids, добавляем их в параметры
         if !walletCoinUids.isEmpty {
             parameters["enabled_uids"] = walletCoinUids.joined(separator: ",")
         }
 
+        // Выполняем второй запрос
         let responses: [CoinPriceResponse] = try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers(apiTag: "coin_prices"))
-        return responses.map { $0.coinPrice(currencyCode: currencyCode) }
+        
+        // Преобразуем responses в CoinPrice и добавляем к результатам
+        resultCoinPrices.append(contentsOf: responses.map { $0.coinPrice(currencyCode: currencyCode) })
+        
+        // Возвращаем результирующий массив
+        return resultCoinPrices
     }
+
+//    func coinPrices(coinUids: [String], walletCoinUids: [String], currencyCode: String) async throws -> [CoinPrice] {
+//        var hsProviderUids = coinUids.filter { $0 != "philtoken" }
+//        if hsProviderUids.count != coinUids.count {
+//            let coinPrice = try await fetchDexPrices(for: ["philtoken"], currencyCode: currencyCode)
+//            print(coinPrice)
+//        }
+//        
+//        var parameters: Parameters = [
+//            "uids": hsProviderUids.joined(separator: ","),
+//            "currency": currencyCode.lowercased(),
+//            "fields": "price,price_change_24h,last_updated",
+//        ]
+//
+//        if !walletCoinUids.isEmpty {
+//            parameters["enabled_uids"] = walletCoinUids.joined(separator: ",")
+//        }
+//
+//        let responses: [CoinPriceResponse] = try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers(apiTag: "coin_prices"))
+//        return responses.map { $0.coinPrice(currencyCode: currencyCode) }
+//    }
 
     func historicalCoinPrice(coinUid: String, currencyCode: String, timestamp: TimeInterval) async throws -> HistoricalCoinPriceResponse {
         let parameters: Parameters = [
