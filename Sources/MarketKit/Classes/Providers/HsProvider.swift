@@ -206,7 +206,7 @@ extension HsProvider {
             throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
         }
         var request = URLRequest(url: url)
-        request.method = .post
+        request.httpMethod = "POST"
         request.httpBody = body
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
