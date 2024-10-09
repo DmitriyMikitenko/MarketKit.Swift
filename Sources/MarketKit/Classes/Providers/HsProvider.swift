@@ -209,9 +209,9 @@ extension HsProvider {
         request.httpMethod = "POST"
         request.httpBody = body
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        // Выполнение GET-запроса
-        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+//        let (data, response) = try await URLSession.shared.data(from: url)
 
         // Проверка на статус код ответа
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
