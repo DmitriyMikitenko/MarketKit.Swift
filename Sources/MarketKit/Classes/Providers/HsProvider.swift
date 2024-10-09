@@ -217,32 +217,56 @@ extension HsProvider {
             throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
         }
         
-        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-
-        guard let jsonArray = jsonObject as? [[String: Any]] else {
+        guard let jsonArray = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]]
+        else {
             throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
         }
+        
+//        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
+//
+//        guard let jsonArray = jsonObject as? [[String: Any]] else {
+//            throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
+//        }
 
         var coinPriceResponses: [CoinPriceResponse] = []
         
-        for json in jsonArray {
-            guard let uid = json["uid"] as? String,
-                  let priceString = json["price"] as? String,
-                  let priceChangeString = json["price_change_24h"] as? String,
-                  let lastUpdated = json["last_updated"] as? TimeInterval
+        jsonArray.forEach {
+            guard let uid = $0["uid"] as? String,
+                  let priceString = $0["price"] as? String,
+                  let priceChangeString = $0["price_change_24h"] as? String,
+                  let lastUpdated = $0["last_updated"] as? TimeInterval
             else {
-                continue
+                return
             }
-
+            
             let price = Decimal(string: priceString) ?? 0
             let priceChange = Decimal(string: priceChangeString) ?? 0
-
+            
             let coinPriceResponse = CoinPriceResponse(uid: uid,
                                                       price: price,
                                                       priceChange: priceChange,
                                                       lastUpdated: lastUpdated)
             coinPriceResponses.append(coinPriceResponse)
         }
+        
+//        for json in jsonArray {
+//            guard let uid = json["uid"] as? String,
+//                  let priceString = json["price"] as? String,
+//                  let priceChangeString = json["price_change_24h"] as? String,
+//                  let lastUpdated = json["last_updated"] as? TimeInterval
+//            else {
+//                continue
+//            }
+//
+//            let price = Decimal(string: priceString) ?? 0
+//            let priceChange = Decimal(string: priceChangeString) ?? 0
+//
+//            let coinPriceResponse = CoinPriceResponse(uid: uid,
+//                                                      price: price,
+//                                                      priceChange: priceChange,
+//                                                      lastUpdated: lastUpdated)
+//            coinPriceResponses.append(coinPriceResponse)
+//        }
 
         return coinPriceResponses.map { $0.coinPrice(currencyCode: currencyCode) }
     }
