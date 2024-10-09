@@ -10,6 +10,7 @@ class HsProvider {
     private let appId: String?
     private let apiKey: String?
     private let dexUrl: String = "https://dev-api.dextrade.com/public/price/by/uuids"
+    private let dexUids: [String] = ["philtoken"]
 
     var proAuthToken: String?
 
@@ -211,60 +212,64 @@ extension HsProvider {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let (data, response) = try await URLSession.shared.data(for: request)
-//        let (data, response) = try await URLSession.shared.data(from: url)
 
-        // Проверка на статус код ответа
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
             throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
         }
         
-        // Десериализация ответа
         let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
 
-        // Проверка на тип объекта (должен быть массив словарей)
         guard let jsonArray = jsonObject as? [[String: Any]] else {
             throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
         }
 
-        // Преобразование в массив CoinPrice через mapArray
-        let coinPrices = try Mapper<CoinPriceResponse>().mapArray(JSONObject: jsonArray)
+        var coinPriceResponses: [CoinPriceResponse] = []
+        
+        for json in jsonArray {
+            guard let uid = json["uid"] as? String,
+                  let priceString = json["price"] as? String,
+                  let priceChangeString = json["price_change_24h"] as? String,
+                  let lastUpdated = json["last_updated"] as? TimeInterval
+            else {
+                continue
+            }
 
-        // Возвращаем массив объектов CoinPrice
-        return coinPrices.map { $0.coinPrice(currencyCode: currencyCode) }
+            let price = Decimal(string: priceString) ?? 0
+            let priceChange = Decimal(string: priceChangeString) ?? 0
+
+            let coinPriceResponse = CoinPriceResponse(uid: uid,
+                                                      price: price,
+                                                      priceChange: priceChange,
+                                                      lastUpdated: lastUpdated)
+            coinPriceResponses.append(coinPriceResponse)
+        }
+
+        return coinPriceResponses.map { $0.coinPrice(currencyCode: currencyCode) }
     }
     
     func coinPrices(coinUids: [String], walletCoinUids: [String], currencyCode: String) async throws -> [CoinPrice] {
-        // Создаем массив для хранения всех цен
         var resultCoinPrices: [CoinPrice] = []
-
-        // Фильтруем coinUids
-        var hsProviderUids = coinUids.filter { $0 != "philtoken" }
+        var hsProviderUids = coinUids.filter { !dexUids.contains($0) }
         
-        // Если "philtoken" в списке, выполняем fetchDexPrices
         if hsProviderUids.count != coinUids.count {
-            let dexPrices = try await fetchDexPrices(for: ["philtoken"], currencyCode: currencyCode)
-            resultCoinPrices.append(contentsOf: dexPrices)  // Добавляем результат fetchDexPrices
+            let dexPrices = try await fetchDexPrices(for: dexUids, currencyCode: currencyCode)
+            resultCoinPrices.append(contentsOf: dexPrices)
         }
 
-        // Подготавливаем параметры для второго запроса
         var parameters: Parameters = [
             "uids": hsProviderUids.joined(separator: ","),
             "currency": currencyCode.lowercased(),
             "fields": "price,price_change_24h,last_updated"
         ]
 
-        // Если есть walletCoinUids, добавляем их в параметры
         if !walletCoinUids.isEmpty {
             parameters["enabled_uids"] = walletCoinUids.joined(separator: ",")
         }
 
-        // Выполняем второй запрос
         let responses: [CoinPriceResponse] = try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers(apiTag: "coin_prices"))
         
-        // Преобразуем responses в CoinPrice и добавляем к результатам
         resultCoinPrices.append(contentsOf: responses.map { $0.coinPrice(currencyCode: currencyCode) })
         
-        // Возвращаем результирующий массив
         return resultCoinPrices
     }
 
