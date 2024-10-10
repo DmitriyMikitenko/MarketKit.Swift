@@ -221,12 +221,6 @@ extension HsProvider {
         else {
             throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
         }
-        
-//        let jsonObject = try JSONSerialization.jsonObject(with: data, options: [])
-//
-//        guard let jsonArray = jsonObject as? [[String: Any]] else {
-//            throw NSError(domain: "Invalid Response", code: -1, userInfo: nil)
-//        }
 
         var coinPriceResponses: [CoinPriceResponse] = []
         
@@ -245,25 +239,6 @@ extension HsProvider {
                                                       lastUpdated: lastUpdated)
             coinPriceResponses.append(coinPriceResponse)
         }
-        
-//        for json in jsonArray {
-//            guard let uid = json["uid"] as? String,
-//                  let priceString = json["price"] as? String,
-//                  let priceChangeString = json["price_change_24h"] as? String,
-//                  let lastUpdated = json["last_updated"] as? TimeInterval
-//            else {
-//                continue
-//            }
-//
-//            let price = Decimal(string: priceString) ?? 0
-//            let priceChange = Decimal(string: priceChangeString) ?? 0
-//
-//            let coinPriceResponse = CoinPriceResponse(uid: uid,
-//                                                      price: price,
-//                                                      priceChange: priceChange,
-//                                                      lastUpdated: lastUpdated)
-//            coinPriceResponses.append(coinPriceResponse)
-//        }
 
         return coinPriceResponses.map { $0.coinPrice(currencyCode: currencyCode) }
     }
@@ -293,27 +268,6 @@ extension HsProvider {
         
         return resultCoinPrices
     }
-
-//    func coinPrices(coinUids: [String], walletCoinUids: [String], currencyCode: String) async throws -> [CoinPrice] {
-//        var hsProviderUids = coinUids.filter { $0 != "philtoken" }
-//        if hsProviderUids.count != coinUids.count {
-//            let coinPrice = try await fetchDexPrices(for: ["philtoken"], currencyCode: currencyCode)
-//            print(coinPrice)
-//        }
-//        
-//        var parameters: Parameters = [
-//            "uids": hsProviderUids.joined(separator: ","),
-//            "currency": currencyCode.lowercased(),
-//            "fields": "price,price_change_24h,last_updated",
-//        ]
-//
-//        if !walletCoinUids.isEmpty {
-//            parameters["enabled_uids"] = walletCoinUids.joined(separator: ",")
-//        }
-//
-//        let responses: [CoinPriceResponse] = try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers(apiTag: "coin_prices"))
-//        return responses.map { $0.coinPrice(currencyCode: currencyCode) }
-//    }
 
     func historicalCoinPrice(coinUid: String, currencyCode: String, timestamp: TimeInterval) async throws -> HistoricalCoinPriceResponse {
         let parameters: Parameters = [
