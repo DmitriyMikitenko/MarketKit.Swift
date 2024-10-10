@@ -232,16 +232,16 @@ extension HsProvider {
         
         jsonArray.forEach {
             guard let uid = $0["uid"] as? String,
-                  let price = $0["price"] as? Decimal,
-                  let priceChange = $0["price_change_24h"] as? Decimal,
+                  let price = $0["price"] as? Double,
+                  let priceChange = $0["price_change_24h"] as? Int64,
                   let lastUpdated = $0["last_updated"] as? TimeInterval
             else {
                 return
             }
             
             let coinPriceResponse = CoinPriceResponse(uid: uid,
-                                                      price: price,
-                                                      priceChange: priceChange,
+                                                      price: Decimal(price),
+                                                      priceChange: Decimal(priceChange),
                                                       lastUpdated: lastUpdated)
             coinPriceResponses.append(coinPriceResponse)
         }
