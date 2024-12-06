@@ -18,6 +18,7 @@ public enum BlockchainType {
     case solana
     case ton
     case xdc
+    case elrond
     case unsupported(uid: String)
 
     public init(uid: String) {
@@ -41,6 +42,7 @@ public enum BlockchainType {
         case "solana": self = .solana
         case "xdc-network": self = .xdc
         case "the-open-network": self = .ton
+        case "elrond-erd-2": self = .elrond
         default: self = .unsupported(uid: uid)
         }
     }
@@ -66,6 +68,7 @@ public enum BlockchainType {
         case .solana: return "solana"
         case .ton: return "the-open-network"
         case .xdc: return "xdc-network"
+        case .elrond: return "elrond-erd-2"
         case let .unsupported(uid): return uid
         }
     }
