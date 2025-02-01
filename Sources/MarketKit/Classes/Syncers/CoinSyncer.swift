@@ -43,7 +43,8 @@ class CoinSyncer {
     func newBlockchains() -> [BlockchainRecord] {
         var blockchainRecords = [BlockchainRecord]()
         let xdcBlockchain = BlockchainRecord(uid: "xdc-network", name: "xdc-network")
-        blockchainRecords.append(xdcBlockchain)
+        let lightningBlockchain = BlockchainRecord(uid: "lightning", name: "lightning")
+        blockchainRecords.append(contentsOf: [xdcBlockchain, lightningBlockchain])
         
         return blockchainRecords
     }
@@ -54,8 +55,9 @@ class CoinSyncer {
         let mewToken = TokenRecord(coinUid: "cat-in-a-dogs-world", blockchainUid: "solana", type: "spl", decimals: 5, reference: "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5")
         let philToken = TokenRecord(coinUid: "philtoken", blockchainUid: "ethereum", type: "eip20", decimals: 18, reference: "0xc328a59E7321747aEBBc49FD28d1b32C1af8d3b2")
         let elrondToken = TokenRecord(coinUid: "elrond-erd-2", blockchainUid: "elrond-erd-2", type: "native", decimals: 18)
+        let btcLightningToken = TokenRecord(coinUid: "bitcoin", blockchainUid: "lightning", type: "native", decimals: 18)
         
-        tokenRecords.append(contentsOf: [xdcToken, mewToken, philToken, elrondToken])
+        tokenRecords.append(contentsOf: [xdcToken, mewToken, philToken, elrondToken, btcLightningToken])
         
         return tokenRecords
     }
