@@ -34,7 +34,7 @@ class CoinSyncer {
         let xdcCoin = Coin(uid: "xdce-crowd-sale", name: "XDC Network", code: "XDC")
         let mewCoin = Coin(uid: "cat-in-a-dogs-world;", name: "cat in a dogs world", code: "MEW", marketCapRank: 150, coinGeckoId: "cat-in-a-dogs-world;")
         let philCoin = Coin(uid: "philtoken", name: "Philtoken", code: "PHIL", marketCapRank: 1, coinGeckoId: "philtoken")
-        let btcLightningCoin = Coin(uid: "lightning-bitcoin", name: "Lightning Bitcoin", code: "lbtc", coinGeckoId: "lightning-bitcoin")
+        let btcLightningCoin = Coin(uid: "lightning-bitcoin", name: "Lightning Bitcoin", code: "LBTC", coinGeckoId: "lightning-bitcoin")
                 
         newCoins.append(contentsOf: [xdcCoin, mewCoin, philCoin, btcLightningCoin])
         
