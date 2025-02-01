@@ -44,7 +44,7 @@ public enum BlockchainType {
         case "xdc-network": self = .xdc
         case "the-open-network": self = .ton
         case "elrond-erd-2": self = .elrond
-        case "lightning": self = .lightning
+        case "lightning-bitcoin": self = .lightning
         default: self = .unsupported(uid: uid)
         }
     }
@@ -71,7 +71,7 @@ public enum BlockchainType {
         case .ton: return "the-open-network"
         case .xdc: return "xdc-network"
         case .elrond: return "elrond-erd-2"
-        case .lightning: return "lightning"
+        case .lightning: return "lightning-bitcoin"
         case let .unsupported(uid): return uid
         }
     }
