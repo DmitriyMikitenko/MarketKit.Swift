@@ -8,7 +8,7 @@ class CoinSyncer {
     private let keyTokensLastSyncTimestamp = "coin-syncer-tokens-last-sync-timestamp"
     private let keyInitialSyncVersion = "coin-syncer-initial-sync-version"
     private let limit = 1000
-    private let currentVersion = 9
+    private let currentVersion = 10
 
     private let storage: CoinStorage
     private let hsProvider: HsProvider
@@ -34,8 +34,9 @@ class CoinSyncer {
         let xdcCoin = Coin(uid: "xdce-crowd-sale", name: "XDC Network", code: "XDC")
         let mewCoin = Coin(uid: "cat-in-a-dogs-world;", name: "cat in a dogs world", code: "MEW", marketCapRank: 150, coinGeckoId: "cat-in-a-dogs-world;")
         let philCoin = Coin(uid: "philtoken", name: "Philtoken", code: "PHIL", marketCapRank: 1, coinGeckoId: "philtoken")
+        let somniaCoin = Coin(uid: "somnia", name: "Somnia", code: "STT", marketCapRank: 1182, coinGeckoId: "somnia")
                 
-        newCoins.append(contentsOf: [xdcCoin, mewCoin, philCoin])
+        newCoins.append(contentsOf: [xdcCoin, mewCoin, philCoin, somniaCoin])
         
         return newCoins
     }
@@ -44,7 +45,8 @@ class CoinSyncer {
         var blockchainRecords = [BlockchainRecord]()
         let xdcBlockchain = BlockchainRecord(uid: "xdc-network", name: "xdc-network")
         let lightningBlockchain = BlockchainRecord(uid: "lightning-bitcoin", name: "Lightning Bitcoin")
-        blockchainRecords.append(contentsOf: [xdcBlockchain, lightningBlockchain])
+        let somniaBlockchain = BlockchainRecord(uid: "somnia", name: "Somnia")
+        blockchainRecords.append(contentsOf: [xdcBlockchain, lightningBlockchain, somniaBlockchain])
         
         return blockchainRecords
     }
@@ -56,8 +58,9 @@ class CoinSyncer {
         let philToken = TokenRecord(coinUid: "philtoken", blockchainUid: "ethereum", type: "eip20", decimals: 18, reference: "0xc328a59E7321747aEBBc49FD28d1b32C1af8d3b2")
         let elrondToken = TokenRecord(coinUid: "elrond-erd-2", blockchainUid: "elrond-erd-2", type: "native", decimals: 18)
         let btcLightningToken = TokenRecord(coinUid: "bitcoin", blockchainUid: "lightning-bitcoin", type: "native", decimals: 8)
+        let somniaToken = TokenRecord(coinUid: "somnia", blockchainUid: "somnia", type: "native", decimals: 18)
         
-        tokenRecords.append(contentsOf: [xdcToken, mewToken, philToken, elrondToken, btcLightningToken])
+        tokenRecords.append(contentsOf: [xdcToken, mewToken, philToken, elrondToken, btcLightningToken, somniaToken])
         
         return tokenRecords
     }
