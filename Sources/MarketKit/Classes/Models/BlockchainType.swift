@@ -18,7 +18,6 @@ public enum BlockchainType {
     case solana
     case ton
     case xdc
-    case somnia
     case elrond
     case lightning
     case unsupported(uid: String)
@@ -43,7 +42,6 @@ public enum BlockchainType {
         case "tron": self = .tron
         case "solana": self = .solana
         case "xdc-network": self = .xdc
-        case "somnia": self = .somnia
         case "the-open-network": self = .ton
         case "elrond-erd-2": self = .elrond
         case "lightning-bitcoin": self = .lightning
@@ -72,7 +70,6 @@ public enum BlockchainType {
         case .solana: return "solana"
         case .ton: return "the-open-network"
         case .xdc: return "xdc-network"
-        case .somnia: return "somnia"
         case .elrond: return "elrond-erd-2"
         case .lightning: return "lightning-bitcoin"
         case let .unsupported(uid): return uid
