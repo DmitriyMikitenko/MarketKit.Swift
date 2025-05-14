@@ -266,7 +266,17 @@ extension HsProvider {
         
         resultCoinPrices.append(contentsOf: responses.map { $0.coinPrice(currencyCode: currencyCode) })
         
-        return resultCoinPrices
+        if coinUids.contains("somnia") {
+            resultCoinPrices.append(
+                CoinPrice(coinUid: "somnia",
+                          currencyCode: currencyCode,
+                          value: 1,
+                          diff: nil,
+                          timestamp: Date().timeIntervalSince1970)
+            )
+        }
+            
+            return resultCoinPrices
     }
 
     func historicalCoinPrice(coinUid: String, currencyCode: String, timestamp: TimeInterval) async throws -> HistoricalCoinPriceResponse {
