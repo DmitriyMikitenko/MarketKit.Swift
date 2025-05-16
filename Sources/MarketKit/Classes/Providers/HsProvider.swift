@@ -243,28 +243,68 @@ extension HsProvider {
         return coinPriceResponses.map { $0.coinPrice(currencyCode: currencyCode) }
     }
     
+    /**
+     * Fetches prices for specified coin UIDs.
+     * - Parameters:
+     *   - coinUids: Array of coin UIDs to fetch prices for
+     *   - walletCoinUids: Array of wallet coin UIDs for filtering
+     *   - currencyCode: Currency code for price conversion
+     * - Returns: Array of CoinPrice objects
+     * - Throws: Network or parsing errors
+     */
     func coinPrices(coinUids: [String], walletCoinUids: [String], currencyCode: String) async throws -> [CoinPrice] {
         var resultCoinPrices: [CoinPrice] = []
-        var hsProviderUids = coinUids.filter { !dexUids.contains($0) }
         
-        if hsProviderUids.count != coinUids.count {
-            let dexPrices = try await fetchDexPrices(for: dexUids, currencyCode: currencyCode)
-            resultCoinPrices.append(contentsOf: dexPrices)
-        }
+        // Filter out UIDs that should be fetched from DEX
+        var hsProviderUids = coinUids.filter { !dexUids.contains($0) }
 
+        // Prepare parameters for hsProvider request
         var parameters: Parameters = [
             "uids": hsProviderUids.joined(separator: ","),
             "currency": currencyCode.lowercased(),
             "fields": "price,price_change_24h,last_updated"
         ]
 
+        // Add wallet filtering if provided
         if !walletCoinUids.isEmpty {
             parameters["enabled_uids"] = walletCoinUids.joined(separator: ",")
         }
 
+        // Fetch prices from hsProvider
         let responses: [CoinPriceResponse] = try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers(apiTag: "coin_prices"))
         
-        resultCoinPrices.append(contentsOf: responses.map { $0.coinPrice(currencyCode: currencyCode) })
+        // Convert responses to CoinPrice objects
+        let hsProviderCoinPrices: [CoinPrice] = responses.map { $0.coinPrice(currencyCode: currencyCode) }
+        
+        // Filter out expired prices that need to be fetched from DEX
+        let expiredPrices = hsProviderCoinPrices.filter { $0.expired }
+                
+        // If we have UIDs that need to be fetched from DEX (either predefined or with expired prices)
+        if hsProviderUids.count != coinUids.count || !expiredPrices.isEmpty {
+            // Create a unique list of UIDs to fetch from DEX (avoid duplicates)
+            let uidsList = Array(Set(dexUids + expiredPrices.map { $0.coinUid }))
+            
+            // Fetch prices from DEX with error handling
+            // Use empty array as fallback if the request fails
+            let dexPrices = (try? await fetchDexPrices(for: uidsList, currencyCode: currencyCode)) ?? []
+
+            // Identify UIDs that were not returned in the DEX response
+            let receivedDexUids = Set(dexPrices.map { $0.coinUid })
+            let missingUids = Set(uidsList).subtracting(receivedDexUids)
+
+            // Add successful DEX prices to results
+            resultCoinPrices.append(contentsOf: dexPrices)
+
+            // Fallback strategy: for expired prices that weren't returned by DEX,
+            // use the expired prices from hsProvider rather than having no data
+            if !missingUids.isEmpty {
+                let fallbackExpiredPrices = expiredPrices.filter { missingUids.contains($0.coinUid) }
+                resultCoinPrices.append(contentsOf: fallbackExpiredPrices)
+            }
+        }
+        
+        // Add valid (non-expired) prices from hsProvider to results
+        resultCoinPrices.append(contentsOf: hsProviderCoinPrices.filter { !$0.expired })
         
         return resultCoinPrices
     }
