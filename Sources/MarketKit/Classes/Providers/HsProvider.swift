@@ -9,7 +9,7 @@ class HsProvider {
     private let appVersion: String
     private let appId: String?
     private let apiKey: String?
-    private let dexUrl: String = "https://dev-api.dextrade.com/public/price/by/uuids"
+    private let dexUrl: String = "https://api.dextrade.com/public/price/by/uuids"
     private let dexUids: [String] = ["philtoken"]
 
     var proAuthToken: String?
