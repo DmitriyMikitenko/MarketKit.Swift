@@ -8,7 +8,7 @@ class CoinSyncer {
     private let keyTokensLastSyncTimestamp = "coin-syncer-tokens-last-sync-timestamp"
     private let keyInitialSyncVersion = "coin-syncer-initial-sync-version"
     private let limit = 1000
-    private let currentVersion = 9
+    private let currentVersion = 10
 
     private let storage: CoinStorage
     private let hsProvider: HsProvider
@@ -56,8 +56,9 @@ class CoinSyncer {
         let philToken = TokenRecord(coinUid: "philtoken", blockchainUid: "ethereum", type: "eip20", decimals: 18, reference: "0xc328a59E7321747aEBBc49FD28d1b32C1af8d3b2")
         let elrondToken = TokenRecord(coinUid: "elrond-erd-2", blockchainUid: "elrond-erd-2", type: "native", decimals: 18)
         let btcLightningToken = TokenRecord(coinUid: "bitcoin", blockchainUid: "lightning-bitcoin", type: "native", decimals: 8)
+        let usdcMaticToken = TokenRecord(coinUid: "usd-coin", blockchainUid: "polygon-pos", type: "eip20", decimals: 6, reference: "0x3c499c542cef5e3811e1192ce70d8cc03d5c3359")
         
-        tokenRecords.append(contentsOf: [xdcToken, mewToken, philToken, elrondToken, btcLightningToken])
+        tokenRecords.append(contentsOf: [xdcToken, mewToken, philToken, elrondToken, btcLightningToken, usdcMaticToken])
         
         return tokenRecords
     }
