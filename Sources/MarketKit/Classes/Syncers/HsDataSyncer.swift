@@ -13,6 +13,7 @@ class HsDataSyncer {
 
 extension HsDataSyncer {
     func sync() {
+        coinSyncer.syncRemote()
 //        Task { [hsProvider, coinSyncer] in
 //            do {
 //                let status = try await hsProvider.status()

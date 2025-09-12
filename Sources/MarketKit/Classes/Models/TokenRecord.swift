@@ -1,7 +1,23 @@
 import GRDB
 import ObjectMapper
 
-class TokenRecord: Record, Decodable, ImmutableMappable {
+class TokenRecord: Record, Decodable, ImmutableMappable, Hashable {
+    static func == (lhs: TokenRecord, rhs: TokenRecord) -> Bool {
+        return lhs.coinUid == rhs.coinUid &&
+               lhs.blockchainUid == rhs.blockchainUid &&
+               lhs.type == rhs.type &&
+               lhs.decimals == rhs.decimals &&
+               lhs.reference == rhs.reference
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(coinUid)
+        hasher.combine(blockchainUid)
+        hasher.combine(type)
+        hasher.combine(decimals)
+        hasher.combine(reference)
+    }
+    
     static let coin = belongsTo(Coin.self)
     static let blockchain = belongsTo(BlockchainRecord.self)
 

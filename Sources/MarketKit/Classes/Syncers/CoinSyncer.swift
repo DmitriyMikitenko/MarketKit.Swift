@@ -7,6 +7,10 @@ class CoinSyncer {
     private let keyBlockchainsLastSyncTimestamp = "coin-syncer-blockchains-last-sync-timestamp"
     private let keyTokensLastSyncTimestamp = "coin-syncer-tokens-last-sync-timestamp"
     private let keyInitialSyncVersion = "coin-syncer-initial-sync-version"
+    
+    private let keyDextradeCoinsLastSyncTimestamp = "coin-syncer-dextrade-coins-last-sync-timestamp"
+    private let keyDextradeTokensLastSyncTimestamp = "coin-syncer-dextrade-tokens-last-sync-timestamp"
+    
     private let limit = 1000
     private let currentVersion = 10
 
@@ -27,6 +31,11 @@ class CoinSyncer {
         try? syncerStateStorage.save(value: String(coins), key: keyCoinsLastSyncTimestamp)
         try? syncerStateStorage.save(value: String(blockchains), key: keyBlockchainsLastSyncTimestamp)
         try? syncerStateStorage.save(value: String(tokens), key: keyTokensLastSyncTimestamp)
+    }
+    
+    private func saveLastDTSyncTimestamps(coins: Int, tokens: Int) {
+        try? syncerStateStorage.save(value: String(coins), key: keyDextradeCoinsLastSyncTimestamp)
+        try? syncerStateStorage.save(value: String(tokens), key: keyDextradeTokensLastSyncTimestamp)
     }
     
     func newCoins() -> [Coin] {
@@ -167,6 +176,112 @@ extension CoinSyncer {
     func tokenRecordsDump() throws -> String? {
         let tokenRecords = try storage.allTokenRecords()
         return tokenRecords.toJSONString()
+    }
+    
+    func syncRemote() {
+        Task {
+            do {
+                var coinsOutdated = true
+                var tokensOutdated = true
+                
+                let remoteCoinsResponse = try await DTProvider.remoteCoins()
+                let remoteTokensResponse = try await DTProvider.remoteTokens()
+                
+                let remoteCoinsLastTimestamp = remoteCoinsResponse.version
+                let remoteTokensLastTimestamp = remoteTokensResponse.version
+                
+                if let rawLastSyncTimestamp = try? syncerStateStorage.value(key: keyDextradeCoinsLastSyncTimestamp),
+                   let localLastSyncTimestamp = Int(rawLastSyncTimestamp),
+                   remoteCoinsLastTimestamp <= localLastSyncTimestamp {
+                    coinsOutdated = false
+                }
+                
+                if let rawLastSyncTimestamp = try? syncerStateStorage.value(key: keyDextradeTokensLastSyncTimestamp),
+                   let localLastSyncTimestamp = Int(rawLastSyncTimestamp),
+                   remoteTokensLastTimestamp <= localLastSyncTimestamp {
+                    tokensOutdated = false
+                }
+                
+                guard coinsOutdated || tokensOutdated else {
+                    return
+                }
+                
+                let remoteCoins: [Coin] = remoteCoinsResponse.coins.compactMap { convertToCoinModel(dextradeCoin: $0) }
+                let remoteTokens: [TokenRecord] = remoteTokensResponse.tokens.compactMap { convertToTokenRecord(dextradeToken: $0) }
+                
+                let currentCoins = try storage.allCoins()
+                let currentTokens = try storage.allTokenRecords()
+                let currentBlockchains = try storage.allBlockchainRecords()
+                
+                let mergedCoins = Array(Set(currentCoins).union(remoteCoins))
+                let mergedTokens = Array(Set(currentTokens).union(remoteTokens))
+                
+                try storage.update(coins: mergedCoins, blockchainRecords: currentBlockchains, tokenRecords: mergedTokens)
+                saveLastDTSyncTimestamps(coins: remoteCoinsLastTimestamp, tokens: remoteTokensLastTimestamp)
+            } catch {
+                print("Error while trying fetch or handle data from Dextrade: \(error)")
+            }
+        }.store(in: &tasks)
+    }
+    
+    private func convertToCoinModel(dextradeCoin: DTCoin) -> Coin? {
+        guard let uid = dextradeCoin.uid,
+              let name = dextradeCoin.name,
+              let code = dextradeCoin.code,
+              !uid.isEmpty,
+              !name.isEmpty,
+              !code.isEmpty else {
+            return nil
+        }
+        
+        return Coin(
+            uid: uid,
+            name: name,
+            code: code
+        )
+    }
+    
+    private func convertToTokenRecord(dextradeToken: DTToken) -> TokenRecord? {
+        guard let coinUid = dextradeToken.coin_uid,
+              let blockchain = correctBlockchainUid(old: dextradeToken.blockchain_uid),
+              let type = dextradeToken.type,
+              let decimals = dextradeToken.decimals,
+              !coinUid.isEmpty,
+              !blockchain.isEmpty,
+              !type.isEmpty else {
+            return nil
+        }
+        
+        return TokenRecord(
+            coinUid: coinUid,
+            blockchainUid: blockchain,
+            type: type,
+            decimals: decimals,
+            reference: dextradeToken.address
+        )
+    }
+    
+    private func correctBlockchainUid(old: String?) -> String? {
+        guard let old else {
+            return nil
+        }
+        
+        switch old {
+        case "polygon":
+            return "polygon-pos"
+        case "arbitrumOne":
+            return "arbitrum-one"
+        case "optimism":
+            return "optimistic-ethereum"
+        case "binance_smart_chain":
+            return "binance-smart-chain"
+        case "binance-chain":
+            return nil
+        case "":
+            return nil
+        default:
+            return old
+        }
     }
 
     func sync(coinsTimestamp: Int, blockchainsTimestamp: Int, tokensTimestamp: Int) {
