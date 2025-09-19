@@ -128,7 +128,7 @@ public enum TokenType {
         case .native: return (type: "native", reference: nil)
         case let .derived(derivation): return (type: "derived:\(derivation.rawValue)", reference: nil)
         case let .addressType(type): return (type: "address_type:\(type.rawValue)", reference: nil)
-        case let .eip20(address): return (type: "eip20", reference: address)
+        case let .eip20(address): return (type: "eip20", reference: address.lowercased())
         case let .bep2(symbol): return (type: "bep2", reference: symbol)
         case let .spl(address): return (type: "spl", reference: address)
         case let .unsupported(type, reference): return (type: type, reference: reference)
