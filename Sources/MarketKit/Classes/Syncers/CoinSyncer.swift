@@ -12,7 +12,7 @@ class CoinSyncer {
     private let keyDextradeTokensLastSyncTimestamp = "coin-syncer-dextrade-tokens-last-sync-timestamp"
     
     private let limit = 1000
-    private let currentVersion = 12
+    private let currentVersion = 13
 
     private let storage: CoinStorage
     private let hsProvider: HsProvider
@@ -245,17 +245,12 @@ extension CoinSyncer {
         guard let coinUid = dextradeToken.coin_uid,
               let blockchain = correctBlockchainUid(old: dextradeToken.blockchain_uid),
               let type = dextradeToken.type,
-              var decimals = dextradeToken.decimals,
+              let decimals = dextradeToken.decimals,
               !coinUid.isEmpty,
               !blockchain.isEmpty,
               !type.isEmpty else {
             return nil
         }
-        
-        if coinUid == "tether" {
-            decimals = 6
-        }
-        
         
         return TokenRecord(
             coinUid: coinUid,
