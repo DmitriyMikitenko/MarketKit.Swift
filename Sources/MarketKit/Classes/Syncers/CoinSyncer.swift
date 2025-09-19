@@ -245,12 +245,17 @@ extension CoinSyncer {
         guard let coinUid = dextradeToken.coin_uid,
               let blockchain = correctBlockchainUid(old: dextradeToken.blockchain_uid),
               let type = dextradeToken.type,
-              let decimals = dextradeToken.decimals,
+              var decimals = dextradeToken.decimals,
               !coinUid.isEmpty,
               !blockchain.isEmpty,
               !type.isEmpty else {
             return nil
         }
+        
+        if coinUid == "tether" {
+            decimals = 6
+        }
+        
         
         return TokenRecord(
             coinUid: coinUid,
