@@ -12,7 +12,7 @@ class CoinSyncer {
     private let keyDextradeTokensLastSyncTimestamp = "coin-syncer-dextrade-tokens-last-sync-timestamp"
     
     private let limit = 1000
-    private let currentVersion = 13
+    private let currentVersion = 14
 
     private let storage: CoinStorage
     private let hsProvider: HsProvider
@@ -257,7 +257,7 @@ extension CoinSyncer {
             blockchainUid: blockchain,
             type: type,
             decimals: decimals,
-            reference: dextradeToken.address
+            reference: dextradeToken.address?.lowercased()
         )
     }
     

@@ -7,7 +7,7 @@ class TokenRecord: Record, Decodable, ImmutableMappable, Hashable {
                lhs.blockchainUid == rhs.blockchainUid &&
                lhs.type == rhs.type &&
                lhs.decimals == rhs.decimals &&
-               lhs.reference == rhs.reference
+               lhs.reference?.lowercased() == rhs.reference?.lowercased()
     }
     
     func hash(into hasher: inout Hasher) {
@@ -15,7 +15,7 @@ class TokenRecord: Record, Decodable, ImmutableMappable, Hashable {
         hasher.combine(blockchainUid)
         hasher.combine(type)
         hasher.combine(decimals)
-        hasher.combine(reference)
+        hasher.combine(reference?.lowercased())
     }
     
     static let coin = belongsTo(Coin.self)
