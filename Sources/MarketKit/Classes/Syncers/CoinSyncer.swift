@@ -255,6 +255,10 @@ extension CoinSyncer {
             return nil
         }
         
+        if coinUid == "usd-coin" || coinUid == "tether" {
+            return nil
+        }
+        
         return TokenRecord(
             coinUid: coinUid,
             blockchainUid: blockchain,
