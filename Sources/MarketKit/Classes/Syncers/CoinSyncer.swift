@@ -213,8 +213,11 @@ extension CoinSyncer {
                 let currentTokens = try storage.allTokenRecords()
                 let currentBlockchains = try storage.allBlockchainRecords()
                 
-                let mergedCoins = Array(Set(currentCoins).union(remoteCoins))
-                let mergedTokens = Array(Set(currentTokens).union(remoteTokens))
+                let currentCoinsSet = Set(currentCoins)
+                let mergedCoins = currentCoins + remoteCoins.filter { !currentCoinsSet.contains($0) }
+                                
+                let currentTokensSet = Set(currentTokens)
+                let mergedTokens = currentTokens + remoteTokens.filter { !currentTokensSet.contains($0) }
                 
                 try storage.update(coins: mergedCoins, blockchainRecords: currentBlockchains, tokenRecords: mergedTokens)
                 saveLastDTSyncTimestamps(coins: remoteCoinsLastTimestamp, tokens: remoteTokensLastTimestamp)
