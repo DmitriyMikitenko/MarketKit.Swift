@@ -12,7 +12,7 @@ class CoinSyncer {
     private let keyDextradeTokensLastSyncTimestamp = "coin-syncer-dextrade-tokens-last-sync-timestamp"
     
     private let limit = 1000
-    private let currentVersion = 14
+    private let currentVersion = 15
 
     private let storage: CoinStorage
     private let hsProvider: HsProvider
